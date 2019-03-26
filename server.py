@@ -6,6 +6,11 @@ from bottle import run, route, default_app
 from message_sender import Sender
 
 
+@route("/")
+def welcome():
+    return "Welcome on our notification platform. This is where lives are saved."
+
+
 @route("/emergency/<location>/")
 @route("/emergency/<location>")
 @route("/emergency/")
@@ -16,6 +21,7 @@ def test(location=None):
     if location:
         emergency_text = "There is an emergency at " + str(location) + "!"
     sender.send_message_to_all_chats(emergency_text)
+    return emergency_text
 
 
 if __name__ == '__main__':
