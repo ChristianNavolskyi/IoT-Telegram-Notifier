@@ -15,14 +15,9 @@ class Sender:
     def __init__(self, token):
         self.user_handler = UserHandler()
         self.bot_handler = BotHandler(token)
-        self.updater = self.bot_handler.updater
-        self.dispatcher = self.bot_handler.dispatcher
         logging.info("Sender initialised.")
-        atexit.register(self.at_exit)
-
-    def at_exit(self):
-        logging.info("Exiting")
-        self.updater.stop()
+        atexit.register(self.bot_handler.stop_polling)
+        self.setup_handlers()
 
     def start_callback(self, bot, update):
         chat_id = update.message.chat_id
@@ -44,10 +39,8 @@ class Sender:
         command_handler = CommandHandler("start", self.start_callback)
         remove_handler = CommandHandler("remove", self.remove_callback)
         message_handler = MessageHandler(filters=Filters.text, callback=message_callback)
-        self.dispatcher.add_handler(command_handler)
-        self.dispatcher.add_handler(remove_handler)
-        self.dispatcher.add_handler(message_handler)
-        self.updater.start_polling(poll_interval=5)
+        self.bot_handler.add_handlers(command_handler, remove_handler, message_handler)
+        self.bot_handler.start_polling(poll_interval=5)
         logging.info("Setting up handler. Starting to poll events now.")
 
     def send_message_to_all_chats(self, message):

@@ -13,6 +13,17 @@ class BotHandler:
         self.updater = Updater(bot=self.bot)
         self.dispatcher = self.updater.dispatcher
 
+    def stop_polling(self):
+        logging.info("Exiting")
+        self.updater.stop()
+
+    def add_handlers(self, *handlers):
+        for handler in handlers:
+            self.dispatcher.add_handler(handler)
+
+    def start_polling(self, poll_interval=None):
+        self.updater.start_polling(poll_interval=poll_interval)
+
 
 class UserHandler:
     def __init__(self):
