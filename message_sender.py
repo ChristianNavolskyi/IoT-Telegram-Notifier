@@ -30,7 +30,6 @@ class Sender:
             bot.send_message(chat_id=chat_id, text="We already know each other, but still welcome back.")
 
     def remove_callback(self, bot, update):
-        logging.info("Removing user callback")
         chat_id = update.message.chat_id
         bot.send_message(chat_id=chat_id, text="I am really sad that you want to leave, but I have to accept your wishes.")
         self.user_handler.remove_user(chat_id)
