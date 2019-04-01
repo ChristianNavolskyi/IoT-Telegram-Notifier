@@ -1,6 +1,8 @@
 import atexit
 import logging
 
+from telegram import Location
+from telegram.error import Unauthorized
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
 from helpers import UserHandler, BotHandler
@@ -42,12 +44,25 @@ class Sender:
         self.bot_handler.start_polling(poll_interval=5)
         logging.info("Setting up handler. Starting to poll events now.")
 
-    def send_message_to_all_chats(self, message):
+    def send_message_to_all_chats(self, message, lon=None, lat=None):
         self.user_handler.update_users()
         users = self.user_handler.users
+
         if users.__len__() == 0:
             logging.info("No users registered to notify.")
             return
-        logging.info("Sending message to all " + str(users.__len__()) + " users: " + message)
-        for user in users:
-            self.bot_handler.bot.send_message(chat_id=user, text=message)
+
+        location = None
+        if lon and lat:
+            location = Location(longitude=lon, latitude=lat)
+
+        bot = self.bot_handler.bot
+        logging.info("Sending message (\"{0}\") to all users ({1})".format(message, users))
+        for i, user in enumerate(users):
+            try:
+                bot.send_message(chat_id=user, text=message)
+                if location:
+                    bot.send_location(chat_id=user, location=location)
+            except Unauthorized:
+                logging.info("User {0} blocked bot and will be removed".format(user))
+                self.user_handler.remove_user(user_id=user)
