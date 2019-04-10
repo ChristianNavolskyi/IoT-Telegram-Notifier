@@ -23,6 +23,8 @@ def post_emergency():
     post_lon = forms.get("lon")
     post_lat = forms.get("lat")
 
+    logging.info("Receiving data: message - {0} lon - {1} lat - {2}".format(post_message, post_lon, post_lat))
+
     if post_message:
         emergency_text = str(post_message)
 
