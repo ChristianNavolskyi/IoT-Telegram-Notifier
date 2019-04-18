@@ -25,7 +25,7 @@ class Sender:
         chat_id = update.message.chat_id
         if not self.user_handler.has_user(chat_id):
             logging.info("New chat started with " + str(update.message.chat_id))
-            bot.send_message(chat_id=chat_id, text="Welcome I am your test bot.")
+            bot.send_message(chat_id=chat_id, text="Thanks for your registration. You might be the one who will save a life!")
             self.user_handler.add_user(chat_id)
         else:
             logging.info("Chat started again with " + str(update.message.chat_id))
