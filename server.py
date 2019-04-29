@@ -1,7 +1,7 @@
 import logging
 import os
 
-from bottle import run, route, default_app
+from bottle import run, route, default_app, post, request
 
 from message_sender import Sender
 
@@ -11,17 +11,24 @@ def welcome():
     return "Welcome on our notification platform. This is where lives are saved."
 
 
-@route("/emergency/<message>/")
-@route("/emergency/<message>")
-@route("/emergency/")
-@route("/emergency")
-def test(message=None):
+@post("/emergency")
+@post("/emergency/")
+def post_emergency():
     logging.info("Emergency was triggered.")
     emergency_text = "There is an emergency!"
-    if message:
-        emergency_text = str(message)
-    sender.send_message_to_all_chats(emergency_text)
-    return emergency_text
+
+    forms = request.forms
+
+    post_message = forms.get("message")
+    post_lon = forms.get("lon")
+    post_lat = forms.get("lat")
+
+    logging.info("Receiving data: message - {0} lon - {1} lat - {2}".format(post_message, post_lon, post_lat))
+
+    if post_message:
+        emergency_text = str(post_message)
+
+    sender.send_message_to_all_chats(emergency_text, lon=post_lon, lat=post_lat)
 
 
 if __name__ == '__main__':

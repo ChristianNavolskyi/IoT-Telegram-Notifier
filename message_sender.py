@@ -1,6 +1,8 @@
 import atexit
 import logging
 
+from telegram import Location
+from telegram.error import Unauthorized
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
 from helpers import UserHandler, BotHandler
@@ -23,7 +25,7 @@ class Sender:
         chat_id = update.message.chat_id
         if not self.user_handler.has_user(chat_id):
             logging.info("New chat started with " + str(update.message.chat_id))
-            bot.send_message(chat_id=chat_id, text="Welcome I am your test bot.")
+            bot.send_message(chat_id=chat_id, text="Thanks for your registration. You might be the one who will save a life!")
             self.user_handler.add_user(chat_id)
         else:
             logging.info("Chat started again with " + str(update.message.chat_id))
@@ -42,12 +44,25 @@ class Sender:
         self.bot_handler.start_polling(poll_interval=5)
         logging.info("Setting up handler. Starting to poll events now.")
 
-    def send_message_to_all_chats(self, message):
+    def send_message_to_all_chats(self, message, lon=None, lat=None):
         self.user_handler.update_users()
         users = self.user_handler.users
+
         if users.__len__() == 0:
             logging.info("No users registered to notify.")
             return
-        logging.info("Sending message to all " + str(users.__len__()) + " users: " + message)
-        for user in users:
-            self.bot_handler.bot.send_message(chat_id=user, text=message)
+
+        location = None
+        if lon and lat:
+            location = Location(longitude=lon, latitude=lat)
+
+        bot = self.bot_handler.bot
+        logging.info("Sending message (\"{0}\") to all users ({1})".format(message, users))
+        for i, user in enumerate(users):
+            try:
+                bot.send_message(chat_id=user, text=message)
+                if location:
+                    bot.send_location(chat_id=user, location=location)
+            except Unauthorized:
+                logging.info("User {0} blocked bot and will be removed".format(user))
+                self.user_handler.remove_user(user_id=user)
